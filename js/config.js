@@ -10,8 +10,8 @@ export default {
 
   // AMFI registration (shown on every page, as AMFI's code of conduct requires)
   arn: 'ARN-372840',
-  arnValidTill: '[DD-MM-YYYY]',
-  euin: '[E-XXXXXX]',
+  arnValidTill: '07-Oct-2029',
+  euin: '', // AMFI allots individual MFDs an EUIN with the ARN; add it here (e.g. 'E123456') once you have it
 
   // Social profiles (optional). Full profile URLs. Leave in [brackets] to hide.
   twitter: '[https://x.com/your-handle]',

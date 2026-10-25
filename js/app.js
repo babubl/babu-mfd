@@ -41,7 +41,7 @@ const contact = {
   tel: () => isPH(CONFIG.phone) ? null : `tel:+${digits(CONFIG.phone)}`,
   book: () => isPH(CONFIG.booking) ? null : CONFIG.booking,
 };
-const regLine = () => `AMFI Registered Mutual Fund Distributor (${esc(CONFIG.arn)})${CONFIG.arnValidTill ? ` (valid till ${esc(CONFIG.arnValidTill)})` : ''} · EUIN ${esc(CONFIG.euin)}`;
+const regLine = () => `AMFI Registered Mutual Fund Distributor (${esc(CONFIG.arn)})${CONFIG.arnValidTill ? ` (valid till ${esc(CONFIG.arnValidTill)})` : ''}${isPH(CONFIG.euin) ? '' : ` · EUIN ${esc(CONFIG.euin)}`}`;
 
 /* ================= data ================= */
 let CATS = null;
@@ -83,13 +83,13 @@ function paintChrome() {
   $('#mono').textContent = CONFIG.initials || CONFIG.name.split(' ').map((w) => w[0]).join('').slice(0, 2);
   $('#brandTag').innerHTML = `AMFI Registered Mutual Fund Distributor <span style="white-space:nowrap">(${esc(CONFIG.arn)})</span>`;
   // Printed pages carry the registration and the standard warning in the page margin, on every page.
-  const foot = `${CONFIG.name} · AMFI Registered Mutual Fund Distributor (${CONFIG.arn}) · EUIN ${CONFIG.euin}. Mutual Fund investments are subject to market risks, read all scheme related documents carefully.`;
+  const foot = `${CONFIG.name} · AMFI Registered Mutual Fund Distributor (${CONFIG.arn})${isPH(CONFIG.euin) ? '' : ` · EUIN ${CONFIG.euin}`}. Mutual Fund investments are subject to market risks, read all scheme related documents carefully.`;
   const css = (t) => '"' + String(t).replace(/[\\"]/g, '\\$&').replace(/[\n\r]/g, ' ') + '"';
   const st = document.createElement('style');
   st.textContent = `@media print{@page{@bottom-left{content:${css(foot)};font:7pt/1.3 Jakarta,sans-serif;color:#444;vertical-align:top;padding-top:3mm;border-top:.3pt solid #999}@bottom-right{content:"Page " counter(page) " of " counter(pages);white-space:nowrap;width:22mm;text-align:right;font:7pt Jakarta,sans-serif;color:#444;vertical-align:top;padding-top:3mm;border-top:.3pt solid #999}}}`;
   document.head.appendChild(st);
   $('#footId').innerHTML = `<b style="color:var(--ink)">${esc(CONFIG.name)}</b><br>${regLine()}<br>${esc(CONFIG.city)}${[['X', CONFIG.twitter], ['LinkedIn', CONFIG.linkedin]].filter(([, u]) => u && !isPH(u) && /^https:\/\//.test(u)).map(([n, u]) => ` · <a href="${esc(u)}" target="_blank" rel="noopener">${n}</a>`).join('')}<br><span class="tiny">${esc(CONFIG.notAdviser)}</span>`;
-  const missing = ['arn', 'arnValidTill', 'euin', 'whatsapp', 'phone', 'email', 'booking', 'bio'].filter((k) => isPH(CONFIG[k]));
+  const missing = ['arn', 'arnValidTill', 'whatsapp', 'phone', 'email', 'booking', 'bio'].filter((k) => isPH(CONFIG[k]));
   const bar = $('#previewBar');
   if (missing.length) { bar.hidden = false; bar.innerHTML = `<b>Preview.</b> Add your ${missing.map((m) => ({ arn: 'ARN', arnValidTill: 'ARN validity', euin: 'EUIN', whatsapp: 'WhatsApp number', phone: 'phone', email: 'email', booking: 'booking link', bio: 'bio' }[m])).join(', ')} in <code>js/config.js</code> before sharing this site.`; }
 }
@@ -504,7 +504,7 @@ function about() {
     <p style="font-size:1.1rem">${esc(CONFIG.bio)}</p>
     <ul style="padding-left:1.1em">${CONFIG.credentials.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>
     <h2 style="font-size:1.4rem;margin-top:30px">Registration</h2>
-    <div class="idcard" style="margin-top:12px"><div><small>Registered as</small><b>AMFI-registered Mutual Fund Distributor</b></div><div><small>ARN</small><b>${esc(CONFIG.arn)}</b></div><div><small>ARN valid till</small><b>${esc(CONFIG.arnValidTill)}</b></div><div><small>EUIN</small><b>${esc(CONFIG.euin)}</b></div></div>
+    <div class="idcard" style="margin-top:12px"><div><small>Registered as</small><b>AMFI-registered Mutual Fund Distributor</b></div><div><small>ARN</small><b>${esc(CONFIG.arn)}</b></div><div><small>ARN valid till</small><b>${esc(CONFIG.arnValidTill)}</b></div>${isPH(CONFIG.euin) ? '' : `<div><small>EUIN</small><b>${esc(CONFIG.euin)}</b></div>`}</div>
     <p class="small muted" style="margin-top:10px">You can verify my registration on <a href="https://www.amfiindia.com/locate-distributor" target="_blank" rel="noopener">AMFI's distributor search</a>.</p>
     <h2 style="font-size:1.4rem;margin-top:30px">How I'm paid</h2>
     <p>I'm paid a trail commission by fund houses on the Regular plans you invest in through me. It comes out of the scheme's yearly expense ratio, not as a separate fee from you. Commission rates differ between schemes and fund houses. Before you invest, I'll tell you the commission I earn on each scheme I suggest, and on the alternatives we considered.</p>
@@ -537,7 +537,7 @@ function contactView() {
     <p class="muted" style="font-size:1.1rem">${hasPlan ? 'Your goal summary is ready. Send it with one tap and I\'ll review it before we speak.' : 'Message, call or book a time. If you have 10 minutes first, setting out your goals makes our conversation far more useful.'}</p>
     <div class="card pad" style="margin-top:18px">${contactButtons(text, hasPlan ? 'My goal summary' : 'Mutual fund enquiry', { waLabel: hasPlan ? 'Send my summary on WhatsApp' : 'WhatsApp me' })}
       ${!hasPlan ? '<p style="margin:16px 0 0"><a href="#planner" style="font-weight:700">Set out my goals first (10 minutes)</a></p>' : ''}</div>
-    <div class="idcard" style="margin-top:22px"><div><small>Phone</small><b>${isPH(CONFIG.phone) ? esc(CONFIG.phone) : '+' + digits(CONFIG.phone)}</b></div><div><small>Email</small><b style="word-break:break-all">${esc(CONFIG.email)}</b></div><div><small>City</small><b>${esc(CONFIG.city)}</b></div><div><small>ARN · EUIN</small><b>${esc(CONFIG.arn)} · ${esc(CONFIG.euin)}</b></div></div>
+    <div class="idcard" style="margin-top:22px"><div><small>Phone</small><b>${isPH(CONFIG.phone) ? esc(CONFIG.phone) : '+' + digits(CONFIG.phone)}</b></div><div><small>Email</small><b style="word-break:break-all">${esc(CONFIG.email)}</b></div><div><small>City</small><b>${esc(CONFIG.city)}</b></div><div><small>${isPH(CONFIG.euin) ? 'ARN' : 'ARN · EUIN'}</small><b>${esc(CONFIG.arn)}${isPH(CONFIG.euin) ? '' : ' · ' + esc(CONFIG.euin)}</b></div></div>
     <p class="tiny" style="margin-top:14px">I never ask for your bank passwords or OTPs, and I never accept investment money in my name. Payments always go directly to the fund house.</p>
   </div>`;
 }
