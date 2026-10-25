@@ -1,8 +1,8 @@
-import CONFIG from './config.js';
+import CONFIG from './config.js?v=dev';
 import {
   RULES, EXPLAIN, ALT_WHY, PROFILE_QUESTIONS, PROFILE_LEVELS, scoreProfile, GOAL_TYPES, ASSUMED_RETURN,
   planAll, encodeState, decodeState, sanitizeState, summaryText, rupees, short, MAX_AMOUNT, RETIREMENT_MULTIPLE,
-} from './engine.js';
+} from './engine.js?v=dev';
 
 /* ================= helpers ================= */
 const $ = (s, el = document) => el.querySelector(s);
