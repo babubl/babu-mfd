@@ -1,4 +1,4 @@
-// Refreshes data/schemes.json (AMFI) and data/sebi.json (SEBI RSS).
+// Refreshes data/sebi.json (SEBI RSS and circulars). The AMFI scheme list is switched off (see INCLUDE_SCHEMES).
 // Runs in GitHub Actions on a schedule. Node 18+ (uses global fetch). No dependencies.
 // If a source is unreachable or returns junk, the previous file is kept and the run still succeeds,
 // so the live site never goes blank.
@@ -55,7 +55,10 @@ let problems = [];
 const sources = {};
 
 // ---------- AMFI ----------
-const navText = await getText(AMFI_URLS, 'AMFI');
+// Scheme lists are no longer published on the site (AMFI's code: no AMC or scheme names without the AMC's
+// written approval), so the AMFI scheme file is not fetched. Set INCLUDE_SCHEMES to true to restore it.
+const INCLUDE_SCHEMES = false;
+const navText = INCLUDE_SCHEMES ? await getText(AMFI_URLS, 'AMFI') : null;
 if (navText) {
   const parsed = parseNavAll(navText, categories);
   if (parsed.schemes.length >= 300 && parsed.amcs.length >= 20) {
@@ -108,7 +111,7 @@ if (navText) {
   } else {
     problems.push(`AMFI parse looked wrong (${parsed.amcs.length} AMCs, ${parsed.schemes.length} schemes); kept previous data`);
   }
-} else {
+} else if (INCLUDE_SCHEMES) {
   problems.push('AMFI unreachable; kept previous data');
 }
 

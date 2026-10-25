@@ -9,9 +9,13 @@ export default {
   city: 'Chennai',
 
   // AMFI registration (shown on every page, as AMFI's code of conduct requires)
-  arn: '[ARN-XXXXXX]',
+  arn: 'ARN-372840',
   arnValidTill: '[DD-MM-YYYY]',
   euin: '[E-XXXXXX]',
+
+  // Social profiles (optional). Full profile URLs. Leave in [brackets] to hide.
+  twitter: '[https://x.com/your-handle]',
+  linkedin: '[https://www.linkedin.com/in/your-profile]',
 
   // How clients reach you. Numbers with country code, digits only, e.g. 919876543210
   whatsapp: '[91XXXXXXXXXX]',
@@ -21,11 +25,12 @@ export default {
   responseDays: 2, // shown on the complaints section: "I'll respond within N working days"
 
   // One or two lines clients read on the About page.
-  bio: '[One or two lines about you, e.g. 16 years in banking, payments and fintech. I help families invest with a clear plan for each goal.]',
+  bio: '16 years in banking, payments, fintech and insurance. I help first-time investors and families invest with a clear plan for each goal, and I tell you what I earn before you decide.',
   credentials: [
-    'AMFI-registered Mutual Fund Distributor',
+    'AMFI Registered Mutual Fund Distributor (ARN-372840)',
     'NISM Series V-A: Mutual Fund Distributors certified',
-    '[Add or remove lines, e.g. 16 years in banking and fintech]',
+    '16 years in banking, payments, fintech and insurance',
+    'Author of "From Salary to Security: Smart Money Moves for First-Time Earners in India" (2025)',
   ],
 
   // Keep this line true to your registrations. Change it if you become a SEBI-registered Investment Adviser.

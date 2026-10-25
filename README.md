@@ -8,7 +8,7 @@ A professional website for an AMFI-registered Mutual Fund Distributor to send to
 
 The site also has:
 
-- a reference page for all 40 SEBI fund categories, each listing the funds of that category from AMFI's daily file;
+- a reference page for all 40 SEBI fund categories, in plain language (no scheme names: it links to AMFI for scheme lists, NAVs and performance);
 - an "For investors" page covering KYC, nominees, statements, SIP changes, redemptions and complaints;
 - a full "About & disclosures" page.
 
@@ -20,7 +20,8 @@ This is the only file you need to change. Every value still in `[square brackets
 
 | Field | What to put |
 |---|---|
-| `arn`, `arnValidTill`, `euin` | Your AMFI registration. Shown in the header, footer, About page, the plan summary and every printed page. |
+| `arn`, `arnValidTill`, `euin` | Your AMFI registration (ARN set: ARN-372840). Shown as "AMFI Registered Mutual Fund Distributor (ARN-372840)", the SEBI standard wording from 1 May 2026, in the header, footer, About page, the plan summary and every printed page. |
+| `twitter`, `linkedin` | Optional full profile URLs, shown in the footer. |
 | `whatsapp`, `phone` | Country code plus number, digits only, e.g. `919876543210`. |
 | `email`, `booking` | Your enquiry email address and booking link (Calendly, Google Calendar booking page or similar). |
 | `bio`, `credentials` | What clients read about you. |
@@ -34,7 +35,7 @@ This is the only file you need to change. Every value still in `[square brackets
 3. **Settings → Actions → General → Workflow permissions: Read and write.**
 4. **Actions → "Refresh AMFI/SEBI data and deploy" → Run workflow.**
 
-The workflow runs every morning. It tests the code, refreshes the AMFI scheme list and SEBI circulars, and redeploys the site.
+The workflow runs every morning. It tests the code, refreshes the SEBI circulars, and redeploys the site. (The AMFI scheme list is switched off: see `INCLUDE_SCHEMES` in `scripts/fetch-data.mjs`.)
 
 ## How the suggestions work (`js/engine.js`)
 
@@ -68,7 +69,7 @@ The workflow runs every morning. It tests the code, refreshes the AMFI scheme li
 - Commission is disclosed in several places: the home page, the FAQ, the About page and the summary itself.
 - The summary is framed as distribution support, not financial planning or investment advice under the SEBI (Investment Advisers) Regulations, 2013. This is stated at the top of the summary and in the FAQ.
 - The site shows fund categories, not specific scheme recommendations.
-- No scheme returns are shown or ranked. Scheme lists are A to Z, and users are pointed to AMFI's fund performance page for returns against benchmarks.
+- No scheme names, AMC names, returns or rankings. AMFI's FAQ for MFDs says not to display AMC names or material naming schemes without the AMC's written approval, so the site links to AMFI's NAV and fund performance pages instead.
 - There are no guarantees, and no safety-implying words ("safe", "protected", "guaranteed", "no risk").
 - Complaints escalate in order: you, then the fund house, then SEBI SCORES, then SMART ODR. AMFI is listed for complaints about a distributor.
 - Tax wording follows the Income-tax Act, 2025 from 1 April 2026: Section 123, formerly 80C.
@@ -78,12 +79,11 @@ The workflow runs every morning. It tests the code, refreshes the AMFI scheme li
 ## Files
 
 ```
-index.html          page shell and all styles (light, dark and print)
+index.html          page shell and all styles (dark theme, gold accent; light print styles)
 js/config.js        your details: the only file you edit
 js/engine.js        profile scoring, goal maths, fund-category rules (pure functions, tested)
 js/app.js           all pages
 data/categories.json  the 40 SEBI fund categories, in plain language
-data/schemes.json   AMFI scheme list (refreshed daily)
 data/sebi.json      SEBI mutual fund circulars (refreshed daily)
 scripts/            daily data refresh (Node, no dependencies)
 fonts/              Plus Jakarta Sans, self-hosted (SIL Open Font License)

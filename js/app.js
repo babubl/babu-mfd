@@ -41,23 +41,14 @@ const contact = {
   tel: () => isPH(CONFIG.phone) ? null : `tel:+${digits(CONFIG.phone)}`,
   book: () => isPH(CONFIG.booking) ? null : CONFIG.booking,
 };
-const regLine = () => `AMFI-registered Mutual Fund Distributor · ARN ${esc(CONFIG.arn)}${CONFIG.arnValidTill ? ` (valid till ${esc(CONFIG.arnValidTill)})` : ''} · EUIN ${esc(CONFIG.euin)}`;
+const regLine = () => `AMFI Registered Mutual Fund Distributor (${esc(CONFIG.arn)})${CONFIG.arnValidTill ? ` (valid till ${esc(CONFIG.arnValidTill)})` : ''} · EUIN ${esc(CONFIG.euin)}`;
 
 /* ================= data ================= */
-let CATS = null, SCHEMES = null, schemesP = null, BY_CAT = {};
+let CATS = null;
 const cat = (id) => CATS.categories.find((c) => c.id === id);
 const grp = (id) => CATS.groups.find((g) => g.id === id);
 const ACTIVE = () => CATS.categories.filter((c) => c.status !== 'discontinued');
 const loadJson = (u) => fetch(u, { cache: 'no-cache' }).then((r) => { if (!r.ok) throw new Error(u); return r.json(); });
-function ensureSchemes() {
-  if (!schemesP) schemesP = loadJson('data/schemes.json').then((s) => {
-    SCHEMES = s; BY_CAT = {};
-    for (const x of s.schemes) if (x.s === 'O') for (const id of x.c || []) (BY_CAT[id] ||= []).push(x);
-    return s;
-  }).catch(() => null);
-  return schemesP;
-}
-
 /* ================= plan state (this browser only) ================= */
 const KEY = 'mfd-plan-v1';
 let STATE = (() => { try { return sanitizeState(JSON.parse(localStorage.getItem(KEY))); } catch { return null; } })() || { name: '', profile: {}, goals: [] };
@@ -90,14 +81,14 @@ $('#menuBtn').onclick = () => { const o = $('#nav').classList.toggle('open'); $(
 function paintChrome() {
   $('#brandName').textContent = CONFIG.name;
   $('#mono').textContent = CONFIG.initials || CONFIG.name.split(' ').map((w) => w[0]).join('').slice(0, 2);
-  $('#brandTag').textContent = `AMFI-registered Mutual Fund Distributor · ARN ${CONFIG.arn}`;
+  $('#brandTag').innerHTML = `AMFI Registered Mutual Fund Distributor <span style="white-space:nowrap">(${esc(CONFIG.arn)})</span>`;
   // Printed pages carry the registration and the standard warning in the page margin, on every page.
-  const foot = `${CONFIG.name} · AMFI-registered Mutual Fund Distributor · ARN ${CONFIG.arn} · EUIN ${CONFIG.euin}. Mutual Fund investments are subject to market risks, read all scheme related documents carefully.`;
+  const foot = `${CONFIG.name} · AMFI Registered Mutual Fund Distributor (${CONFIG.arn}) · EUIN ${CONFIG.euin}. Mutual Fund investments are subject to market risks, read all scheme related documents carefully.`;
   const css = (t) => '"' + String(t).replace(/[\\"]/g, '\\$&').replace(/[\n\r]/g, ' ') + '"';
   const st = document.createElement('style');
   st.textContent = `@media print{@page{@bottom-left{content:${css(foot)};font:7pt/1.3 Jakarta,sans-serif;color:#444;vertical-align:top;padding-top:3mm;border-top:.3pt solid #999}@bottom-right{content:"Page " counter(page) " of " counter(pages);white-space:nowrap;width:22mm;text-align:right;font:7pt Jakarta,sans-serif;color:#444;vertical-align:top;padding-top:3mm;border-top:.3pt solid #999}}}`;
   document.head.appendChild(st);
-  $('#footId').innerHTML = `<b style="color:var(--ink)">${esc(CONFIG.name)}</b><br>${regLine()}<br>${esc(CONFIG.city)}<br><span class="tiny">${esc(CONFIG.notAdviser)}</span>`;
+  $('#footId').innerHTML = `<b style="color:var(--ink)">${esc(CONFIG.name)}</b><br>${regLine()}<br>${esc(CONFIG.city)}${[['X', CONFIG.twitter], ['LinkedIn', CONFIG.linkedin]].filter(([, u]) => u && !isPH(u) && /^https:\/\//.test(u)).map(([n, u]) => ` · <a href="${esc(u)}" target="_blank" rel="noopener">${n}</a>`).join('')}<br><span class="tiny">${esc(CONFIG.notAdviser)}</span>`;
   const missing = ['arn', 'arnValidTill', 'euin', 'whatsapp', 'phone', 'email', 'booking', 'bio'].filter((k) => isPH(CONFIG[k]));
   const bar = $('#previewBar');
   if (missing.length) { bar.hidden = false; bar.innerHTML = `<b>Preview.</b> Add your ${missing.map((m) => ({ arn: 'ARN', arnValidTill: 'ARN validity', euin: 'EUIN', whatsapp: 'WhatsApp number', phone: 'phone', email: 'email', booking: 'booking link', bio: 'bio' }[m])).join(', ')} in <code>js/config.js</code> before sharing this site.`; }
@@ -145,7 +136,7 @@ function home() {
           <a class="btn ghost" href="#learn">Learn the basics first</a>
         </div>
         <div class="trust">
-          <span>${ICON.shield}AMFI-registered · ARN ${esc(CONFIG.arn)}</span>
+          <span>${ICON.shield}AMFI Registered MFD · ${esc(CONFIG.arn)}</span>
           <span>${ICON.lock}Your answers stay on your device</span>
           <span>${ICON.eye}Commissions disclosed upfront</span>
         </div>
@@ -467,7 +458,6 @@ document.addEventListener('keydown', (e) => {
 });
 $('#scrim').onclick = closeDrawer;
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDrawer(); });
-const KIND = { equity: 'Share indices', debt: 'Bond indices', gold: 'Gold', silver: 'Silver', intl: 'International', hybrid: 'Hybrid' };
 async function openFund(id) {
   const c = cat(id); if (!c) return;
   const d = $('#drawer');
@@ -477,38 +467,11 @@ async function openFund(id) {
     <div class="db"><p style="font-size:1.08rem;margin-top:0">${esc(c.what)}</p>
       <div class="facts"><div><small>Key rule</small><b>${esc(c.stat[0])}</b><div class="tiny">${esc(c.stat[1])}</div></div><div><small>Time horizon</small><b>${esc(c.horizon)}</b></div><div><small>Typical risk</small><b>${esc(c.risk)}</b></div></div>
       <p class="small muted"><b>SEBI's rule:</b> ${esc(c.rule)}</p>
-      <div id="fundTable" style="margin-top:22px"><p class="dim small">Loading funds…</p></div>
+      <div id="fundTable" style="margin-top:22px"><h3>Which schemes are in this category?</h3><p class="small muted" style="margin-top:4px">I don't list, rank or compare individual schemes on this site. AMFI publishes every scheme with its daily NAV and its returns against its benchmark:</p><p class="small"><a href="https://www.amfiindia.com/net-asset-value" target="_blank" rel="noopener">AMFI: NAVs of all schemes</a> · <a href="https://www.amfiindia.com/otherdata/fund-performance" target="_blank" rel="noopener">AMFI: fund performance</a></p></div>
       <div class="card pad" style="margin-top:22px"><b>Not sure which one suits you?</b><p class="small muted">I'll look at your goals and each fund's consistency, costs and risk, and tell you what I earn on each.</p>${discuss ? `<a class="btn sm" href="${esc(discuss)}" target="_blank" rel="noopener">${ICON.chat}Discuss with me</a>` : '<a class="btn sm" href="#contact">Discuss with me</a>'}</div>
     </div>`;
   d.classList.add('on'); $('#scrim').classList.add('on'); document.body.style.overflow = 'hidden';
   d.scrollTop = 0; $('.x', d).onclick = closeDrawer; $('.x', d).focus();
-  await ensureSchemes();
-  const box = $('#fundTable');
-  if (!box) return;
-  if (!SCHEMES) { box.innerHTML = '<p class="dim small">Fund data isn\'t available right now.</p>'; return; }
-  const all = BY_CAT[id] || [];
-  if (!all.length) { box.innerHTML = `<div class="empty small">No fund house offers a scheme of this type yet.</div>`; return; }
-  const kinds = [...new Set(all.map((s) => s.k).filter(Boolean))];
-  const st = { q: '', kind: kinds.includes('equity') ? 'equity' : kinds[0] || '', all: false };
-  box.innerHTML = `<h3>${esc(c.name.replace(/ Fund$/, ''))} funds available in India</h3>
-    <p class="small muted" style="margin-top:4px">${all.length} funds from ${new Set(all.map((s) => s.a)).size} fund houses, listed A to Z, from AMFI's daily list. This is a list, not a ranking or a recommendation.</p>
-    ${kinds.length > 1 ? `<div class="filters" style="margin:10px 0 0">${kinds.map((k) => `<button class="chip" type="button" data-kind="${k}" aria-pressed="${st.kind === k}">${esc(KIND[k] || k)}</button>`).join('')}</div>` : ''}
-    <div class="cmp-tools"><label class="sr" for="cq">Search</label><input class="search" id="cq" type="search" placeholder="Search by fund or fund house" style="max-width:280px"></div>
-    <table class="cmp"><thead><tr><th>Fund</th><th>Fund house</th><th>Running for</th></tr></thead><tbody></tbody></table>
-    <button class="link small" type="button" id="cmore" style="margin-top:10px" hidden></button>
-    <p class="small" style="margin-top:14px">To see each fund's returns against its benchmark, use <a href="https://www.amfiindia.com/otherdata/fund-performance" target="_blank" rel="noopener">AMFI's fund performance page</a>. When we speak, I'll compare the funds that fit your goal on consistency, cost and risk, from the fund houses I distribute.</p>`;
-  const tb = $('tbody', box);
-  const age = (s) => (s.y >= 5 ? '5+ years' : s.y >= 3 ? '3–5 years' : s.y >= 1 ? '1–3 years' : 'Under 1 year');
-  const draw = () => {
-    const rows = all.filter((s) => (!st.kind || !s.k || s.k === st.kind) && (!st.q || (SCHEMES.amcs[s.a].name + ' ' + s.n).toLowerCase().includes(st.q))).sort((a, b) => a.n.localeCompare(b.n));
-    const shown = st.all || st.q ? rows : rows.slice(0, 15);
-    tb.innerHTML = shown.map((s) => `<tr><td class="fn">${esc(s.n)}</td><td data-l="Fund house">${esc(SCHEMES.amcs[s.a].name.replace(/\s+Mutual Fund$/i, ''))}</td><td data-l="Running for">${age(s)}</td></tr>`).join('') || '<tr><td colspan="3" class="dim">No fund matches.</td></tr>';
-    const more = $('#cmore'); more.hidden = st.all || !!st.q || rows.length <= 15; more.textContent = `Show all ${rows.length}`;
-  };
-  draw();
-  $('#cq').oninput = (e) => { st.q = e.target.value.toLowerCase().trim(); draw(); };
-  $('#cmore').onclick = () => { st.all = true; draw(); };
-  $$('[data-kind]', box).forEach((b) => b.onclick = () => { st.kind = b.dataset.kind; $$('[data-kind]', box).forEach((x) => x.setAttribute('aria-pressed', x === b)); draw(); });
 }
 
 /* ================= SERVICES ================= */
@@ -556,7 +519,7 @@ function about() {
       <li>Your money always goes directly from your bank to the fund house. I never accept cash or payments in my name for investments.</li>
     </ul>
     <h2 style="font-size:1.4rem;margin-top:30px">Important information</h2>
-    <p class="small muted">${esc(CONFIG.notAdviser)} The goal summary on this site shows the fund category that generally fits each goal based on your answers. It is not financial planning, not investment advice under the SEBI (Investment Advisers) Regulations, 2013, and not a recommendation to buy any scheme. Planning figures use assumptions you can see and change; actual returns will differ. Scheme lists are taken from AMFI's public data and updated daily; this site does not show or rank scheme returns. Fund categories follow SEBI's circular on categorisation of mutual fund schemes dated 26 February 2026. Mutual Fund investments are subject to market risks, read all scheme related documents carefully.</p>
+    <p class="small muted">${esc(CONFIG.notAdviser)} The goal summary on this site shows the fund category that generally fits each goal based on your answers. It is not financial planning, not investment advice under the SEBI (Investment Advisers) Regulations, 2013, and not a recommendation to buy any scheme. Planning figures use assumptions you can see and change; actual returns will differ. This site does not list, rank or recommend individual schemes, and does not show scheme returns. Fund categories follow SEBI's circular on categorisation of mutual fund schemes dated 26 February 2026. Mutual Fund investments are subject to market risks, read all scheme related documents carefully.</p>
     <h2 style="font-size:1.4rem;margin-top:30px">Your privacy</h2>
     <p class="small muted">This site has no sign-up, no cookies and no analytics. Your answers are saved only in your own browser so you can come back to them, and nothing is stored on a server. If you share your summary, the link carries your answers inside it, so anyone with the link can see them, and the app you send it through (WhatsApp or email) will hold a copy. Share it only with me. You can clear your saved answers below.</p>
     <p><button class="link small" type="button" id="clearAll">Clear my saved answers from this device</button></p>
@@ -585,5 +548,4 @@ function contactView() {
   try { CATS = await loadJson('data/categories.json'); }
   catch { $('#main').innerHTML = '<div class="wrap" style="padding:40px 20px"><div class="empty"><b>This page couldn\'t load its data.</b><p>Open it from its web address; browsers block data files when a page is opened from your computer.</p></div></div>'; return; }
   route();
-  setTimeout(ensureSchemes, 1200);
 })();
