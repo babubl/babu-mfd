@@ -1,1 +1,1 @@
-{"lastRun":"2026-11-27T12:25:17.409Z","problems":[],"sources":{"sebiRss":{"ok":true,"items":30,"mf":3},"sebiCircular":{"ok":true,"bytes":45379,"rows":25,"mf":1}}}
+{"lastRun":"2026-11-28T11:50:10.513Z","problems":["SEBI Circulars page unreachable","SEBI unreachable; kept previous data"],"sources":{"sebiRss":{"ok":false},"sebiCircular":{"ok":false}}}
